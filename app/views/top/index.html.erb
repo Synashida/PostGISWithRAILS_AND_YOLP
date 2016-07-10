@@ -1,0 +1,48 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="http://js.api.olp.yahooapis.jp/OpenLocalPlatform/V1/jsapi?appid={ご自身のYOLPキーをご利用ください}" type="text/javascript"  charset="UTF-8"></script>
+<script type="text/javascript">
+var map;
+window.onload = function(){
+    map = new Y.Map("map", {configure : {
+        doubleClickZoom : true,
+        scrollWheelZoom : true,
+        dragging : true
+        }
+    });
+    map.bind('moveend', function() { reloadMap(); });
+
+    map.addControl(new Y.SliderZoomControlVertical());
+    map.addControl(new Y.ScaleControl());
+    map.drawMap(new Y.LatLng(35.681235,139.763995), 14, Y.LayerSetId.NORMAL);
+
+};
+
+function reloadMap() {
+  if (map == undefined) return ;
+  map.clearFeatures();
+
+  // 表示矩形に一致する市区町村の矩形を取得する
+  var bounds = map.getBounds();
+  var center = bounds.getCenter();
+  var ne = bounds.getNorthEast();
+  var sw = bounds.getSouthWest();
+  var params = "&ne_lat=" + ne.lat() + "&ne_lng=" + ne.lng();
+  params += "&nw_lat=" + ne.lat() + "&nw_lng=" + sw.lng();
+  params += "&sw_lat=" + sw.lat() + "&sw_lng=" + sw.lng();
+  params += "&se_lat=" + sw.lat() + "&se_lng=" + ne.lng();
+
+  $.ajax ({
+      type: "GET",
+      url: "/top/get_cities",
+      data: params,
+      success: function(polygons){
+        for (var idx in polygons) {
+          eval(polygons[idx]);
+        }             
+    }
+  });
+}
+</script>
+
+<div id="map" style="width: 100%; height: 100vh;"></div>
+
